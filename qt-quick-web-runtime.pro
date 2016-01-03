@@ -1,15 +1,8 @@
-SOURCES += qtquickruntime.cpp
-QT += quick
-CONFIG += c++11
-TARGET = qtquickruntime
+include(qt-quick-web-runtime.pri)
 
-OBJECTS_DIR = .obj
-MOC_DIR = .moc
-
-# copy example and runtime files to build dir
-install_files.path = $$OUT_PWD
-install_files.files = \
-    $$PWD/qtquickruntime.js \
+# copy example files to build  dir
+example.path = $$OUT_PWD
+example.files = \
     $$PWD/example/example.html \
     $$PWD/example/qml-mousearea-snippet.png
-INSTALLS += install_files
+INSTALLS += example
