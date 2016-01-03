@@ -4,5 +4,5 @@ include(qt-quick-web-runtime.pri)
 example.path = $$OUT_PWD
 example.files = \
     $$PWD/example/example.html \
-    $$PWD/example/qml-mousearea-snippet.png
+    $$PWD/example/example.png
 INSTALLS += example
