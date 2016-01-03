@@ -68,18 +68,18 @@ function $(elementId) {
 function removeChildren(node) {
     while (node.firstChild) {
         node.removeChild(node.firstChild);
-    }   
+    }
 }
 
 // App code
 function init() {
     if (debug)
         console.log("init")
-    
+
     // create the runtime
     runtime = new QtQuickRuntime();
     element = runtime.createElement();
-    
+
     // sign up for QML loading status and errors.
     element.addEventListener("qmlloadend", onQmlStatusChange, true);
     element.addEventListener("qmlwarnings", onQmlWarning, true);
@@ -95,17 +95,17 @@ function onCodeClicked()
     var qmlcode = $("qmlcode");
     var quickview = $("quickview");
     var code = fixifyQmlCode(qmlcode.innerHTML);
-    
+
     // bail out if the Qt Quick preview is already active
     if (active === quickview)
         return
     active = quickview
-    
+
     // remove static content and add QtQuick content
     // ### save static content
     removeChildren(quickview)
     quickview.appendChild(element);
-    
+
     // Create status and warning nodes
     qmlstatus = document.createElement("div");
     qmlstatus.innerHTML = "..."
@@ -116,7 +116,7 @@ function onCodeClicked()
     warnings.innerHTML = " "
     warnings.setAttribute("class", "qt-qml-warnings");
     qmlview.appendChild(warnings)
-    
+
     // Run source code
     runtime.setSource(code);
 }
@@ -125,9 +125,9 @@ function fixifyQmlCode(code)
 {
     var fixedCode = ""
     // Qt for NaCl sizes the root QML elment to the window/viewport size
-    // Many (?) of the examples have fixed size top-level items: wrap 
+    // Many (?) of the examples have fixed size top-level items: wrap
     // everything in a Rectangle
-    // 
+    //
     // ### make it possible to change the defualt top-level sizing.
 
     var lineAfterLastImport = 1;
@@ -155,7 +155,7 @@ function onCodeChanged()
 function onQmlStatusChange(event)
 {
     if (event.detail == "OK") {
-        qmlstatus.innerHTML = "We're doing OK"; 
+        qmlstatus.innerHTML = "We're doing OK";
     } else {
         qmlstatus.innerHTML = event.detail
     }
@@ -169,19 +169,21 @@ function onQmlWarning(event)
 </script>
 
 <body id="TOPLEVEL" onload="init()">
-        <div>
+    <div>
         <div id="container">  </div>
     </div>
     
     <h1>MouseArea QML Type</h1>
-        
-    A MouseArea is an invisible item that is typically used in conjunction with a visible item in order to provide mouse handling for that item. By effectively acting as a proxy, the logic for mouse handling can be contained within a MouseArea item.
+    A MouseArea is an invisible item that is typically used in conjunction with a visible item
+    in order to provide mouse handling for that item. By effectively acting as a proxy, the logic
+    for mouse handling can be contained within a MouseArea item.
     <br>
     <h3>Example Usage</h3>
-    The following example uses a MouseArea in a Rectangle that changes the Rectangle color to red when clicked:
+    The following example uses a MouseArea in a Rectangle that changes the Rectangle color to red
+    when clicked:
     <p>
     <div id="quickview">
-    <img src="example.png" id="quickview"></img>
+        <img src="example.png" id="quickview"></img>
     </div>
     <p>
     <div class="code" id="qmlview" onclick="onCodeClicked()" oninput="onCodeChanged()">
@@ -203,11 +205,8 @@ Rectangle {
         }
     }
 }
-
-</pre>
+        </pre>
     </div>    
-    
-    
-</body>
 
+</body>
 </html>
