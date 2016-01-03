@@ -20,6 +20,9 @@ This will generate the required runtime files:
     qtquickruntime.nmf
     [also index.html, which we will not use]
 
+The files in this repository are BSD-licensed. The license of the
+runtime build depends on the license of the Qt build used.
+
 Using
 ------------------------
 Create the runtime object, create a DOM element, and set the source:
