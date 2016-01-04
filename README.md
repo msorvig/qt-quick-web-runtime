@@ -7,8 +7,8 @@ using Native Client (NaCl). This limits support to the Chrome browser.
 
 Building
 ------------------------
-Build and deploy as standard Qt for NaCl project: (use 'make install' to
-copy over example files.)
+Build and deploy as a Qt for NaCl project: (use 'make install' to copy
+over example files.)
 
     /path/to/qtbase/bin/qmake && make install && /path/to/qtbase/bin/nacldeployqt qtquickruntime.bc
 
@@ -34,13 +34,13 @@ Create the runtime object, create a DOM element, and set the source:
 See qtquickruntime.js for further documentation.
 
 An usage example is also provided:
-    examples/example.html
+    example/example.html
 
 Binary distribution
 ------------------------
 The qt-quick-web-runtime-bin repo contains a LGPL-licensed binary distribution:
 
-    msorvig.github.io/qt-quick-web-runtime-bin/
+    github.com/msorvig/qt-quick-web-runtime-bin
 
 If you are a Qt commercial license holder you can build your own binary using
 your commercially licensed Qt, the BSD licensed Qt for NaCl port, and this BSD
