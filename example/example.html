@@ -77,7 +77,9 @@ function init() {
         console.log("init")
 
     // create the runtime
-    runtime = new QtQuickRuntime();
+    var config = {}
+    config.resizeMode = "sizeViewToRootObject";
+    runtime = new QtQuickRuntime(config);
     element = runtime.createElement();
 
     // sign up for QML loading status and errors.
@@ -94,7 +96,7 @@ function onCodeClicked()
     var qmlview = $("qmlview");
     var qmlcode = $("qmlcode");
     var quickview = $("quickview");
-    var code = fixifyQmlCode(qmlcode.innerHTML);
+    var code = qmlcode.innerHTML;
 
     // bail out if the Qt Quick preview is already active
     if (active === quickview)
@@ -121,27 +123,6 @@ function onCodeClicked()
     runtime.setSource(code);
 }
 
-function fixifyQmlCode(code)
-{
-    var fixedCode = ""
-    // Qt for NaCl sizes the root QML elment to the window/viewport size
-    // Many (?) of the examples have fixed size top-level items: wrap
-    // everything in a Rectangle
-    //
-    // ### make it possible to change the defualt top-level sizing.
-
-    var lineAfterLastImport = 1;
-    var parts = code.split("\n")
-    parts.splice(lineAfterLastImport, 0, "Rectangle {")
-    parts.splice(parts.length, 0, "}")
-
-    fixedCode = parts.join("\n")
-    if (debug)
-        console.log(fixedCode)
-
-    return fixedCode;
-}
-
 function onCodeChanged()
 {
     if (debug)
@@ -149,7 +130,7 @@ function onCodeChanged()
     warnings.innerHTML = " "
     var qmlcode = $("qmlcode");
     var code = qmlcode.innerHTML;
-    runtime.setSource(fixifyQmlCode(code));
+    runtime.setSource(code);
 }
 
 function onQmlStatusChange(event)

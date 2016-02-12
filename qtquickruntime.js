@@ -47,9 +47,13 @@
 //
 // Creation and initlilization:
 //  
-//   var runtime = new QtQuickRuntime()
+//   var runtime = new QtQuickRuntime(config)
 //   var qtQuickElement = runtime.createElement()
 //   runtime.setSource(source)
+//
+// Supported config keys/values:
+//   resizeMode    sizeViewToRootObject
+//                 sizeRootObjectToView (default)
 //
 // setSource() may be called again at a later point int time.
 // QtQuickRuntime will then reset the view element and parse
@@ -83,10 +87,23 @@
 function QtQuickRuntime(config)
 {
     var self = this;
-    self.config = config || {};
 
-    // configure QtLoader from qtloader.js.
+    // Create/update the configuration object for QtLoader. The
+    // QtQuickRuntime config object is re-used: options can be
+    // passed directly to QtLoader.
+    self.config = config || {};
     self.config["src"] = "qtquickruntime.nmf";
+
+    // Handle the "resizeMode" QtQuickRuntime option. Add it to the QtLoader
+    // environment, which is passed to to QtQuickRuntimeInstance::Init()
+    // as argn/argv arguments.
+    var resizeMode = self.config["resizeMode"];
+    if (resizeMode !== undefined) {
+        if (self.config["environment"] === undefined)
+            self.config["environment"] = {};
+        self.config["environment"]["qt_qquickview_resizemode"] = resizeMode;
+    }
+    delete self.config["resizeMode"];
 
     var qtloader = new QtLoader(self.config);
     var element = {};

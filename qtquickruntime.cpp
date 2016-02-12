@@ -59,12 +59,19 @@ public:
     : baseUrl("/")
     , view(0)
     , component(0)
+    , resizeMode(QQuickView::SizeRootObjectToView)
     {
         view = new QQuickView();
-        view->setResizeMode(QQuickView::SizeRootObjectToView);
+        view->setResizeMode(resizeMode);
         QObject::connect(view->engine(), SIGNAL(warnings(const QList<QQmlError> &)),
                          this, SIGNAL(qmlWarnings(const QList<QQmlError> &)));
         view->show();
+    }
+
+    void setResizeMode(QQuickView::ResizeMode mode)
+    {
+        resizeMode = mode;
+        view->setResizeMode(resizeMode);
     }
 
     void setSource(const QByteArray &source)
@@ -111,6 +118,7 @@ private:
     QUrl baseUrl;
     QQuickView *view;
     QQmlComponent *component;
+    QQuickView::ResizeMode resizeMode;
 };
 
 // This the Qt application instance. The entry point is
@@ -128,6 +136,7 @@ public:
     QtQuickRuntimeInstance(PP_Instance ppInstance)
     :QPepperInstance(ppInstance)
     ,reloader(0)
+    ,resizeMode(QQuickView::SizeRootObjectToView)
     {
     }
 
@@ -141,6 +150,7 @@ public:
     {
         // create QmlReloader and set up error handling
         reloader = new QmlReloader();
+        reloader->setResizeMode(resizeMode);
         QObject::connect(reloader, SIGNAL(statusChanged(int)),
                          this, SLOT(loadStatusChanged(int)));
         QObject::connect(reloader, SIGNAL(qmlWarnings(const QList<QQmlError>  &)),
@@ -149,8 +159,18 @@ public:
     
     bool Init(uint32_t argc, const char *argn[], const char *argv[])
     {
-        // Scan the arguments and see if any of them are for us
-        // ...
+        // Scan for QtQuickRuntime arguments
+        for (unsigned int i = 0; i < argc; ++i) {
+            // Check for resize mode default override
+            if (qstrcmp(argn[i], "qt_qquickview_resizemode") == 0) {
+                if (qstrcmp(argv[i], "sizeViewToRootObject") == 0)
+                    resizeMode = QQuickView::SizeViewToRootObject;
+                else if (qstrcmp(argv[i], "sizeRootObjectToView") == 0)
+                    resizeMode = QQuickView::SizeRootObjectToView;
+                else
+                    qWarning() << "Unknown QQuickView Resize Mode" << argv[i];
+            }
+        }
 
         // Call Qt Init function
         return QPepperInstance::Init(argc, argn, argv);
@@ -208,6 +228,7 @@ private Q_SLOTS:
     }
 private:
     QmlReloader *reloader;
+    QQuickView::ResizeMode resizeMode;
 };
 
 // pp::Module boilerplate. There is only one module
