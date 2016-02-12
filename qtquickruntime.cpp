@@ -121,17 +121,17 @@ private:
 // where we handle messages for the QML loader. Messages
 // in other direction sent by loadStatusChanged() and 
 // qmlWarnings() using pp::Instance::PostMessage()
-class AppInstance : public QObject, public QPepperInstance
+class QtQuickRuntimeInstance : public QObject, public QPepperInstance
 {
 Q_OBJECT
 public:
-    AppInstance(PP_Instance ppInstance)
+    QtQuickRuntimeInstance(PP_Instance ppInstance)
     :QPepperInstance(ppInstance)
     ,reloader(0)
     {
     }
 
-    ~AppInstance()
+    ~QtQuickRuntimeInstance()
     {
         delete reloader;
     }
@@ -222,7 +222,7 @@ public:
 
     pp::Instance* CreateInstance(PP_Instance ppInstance)
     {
-        return new AppInstance(ppInstance);
+        return new QtQuickRuntimeInstance(ppInstance);
     }
 };
 
