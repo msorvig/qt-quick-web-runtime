@@ -11,5 +11,7 @@ SOURCES += $$PWD/qtquickruntime.cpp
 
 # copy runtime file to build dir
 runtime.path = $$OUT_PWD
-runtime.files = $$PWD/qtquickruntime.js
+runtime.files = \
+    $$PWD/qtquickruntime.js \
+    $$PWD/qtquickruntime.html
 INSTALLS += runtime
