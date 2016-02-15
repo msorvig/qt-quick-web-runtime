@@ -52,8 +52,12 @@
 //   runtime.setSource(source)
 //
 // Supported config keys/values:
-//   resizeMode    sizeViewToRootObject
-//                 sizeRootObjectToView (default)
+//   resizeMode    "sizeViewToRootObject"
+//                 "sizeRootObjectToView" (default)
+//   path          Path to the runtime implementation files
+//                 (nmf and pexe), relative to the loading
+//                 html file (not this script file). Default
+//                 path is "".
 //
 // setSource() may be called again at a later point int time.
 // QtQuickRuntime will then reset the view element and parse
@@ -104,6 +108,14 @@ function QtQuickRuntime(config)
         self.config["environment"]["qt_qquickview_resizemode"] = resizeMode;
     }
     delete self.config["resizeMode"];
+
+    // Prepend path to nmf src property if set. Take care to not introduce
+    // a leading "/", this would make the src relative to the web root instead
+    // of the loading document.
+    var path = self.config["path"];
+    if (path && path.substr(-path.length) !== "/")
+        path += "/";
+    self.config["src"] = (path ? path : "") + "qtquickruntime.nmf"
 
     var qtloader = new QtLoader(self.config);
     var element = {};
