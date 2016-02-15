@@ -122,9 +122,9 @@ function QtQuickRuntime(config)
     var loadComplete = false;
     var source = "";
     
-    function createElement()
+    function createElement(existingElement)
     {
-        self.element = qtloader.createElement();
+        self.element = qtloader.createElement(existingElement);
 
         // Set up event handling
         var capture = true;
