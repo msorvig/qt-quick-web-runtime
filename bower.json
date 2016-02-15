@@ -1,0 +1,20 @@
+{
+  "name": "qt-quick-runtime",
+  "version": "0.1.0",
+  "description": "The Qt Quick Web Runtime",
+  "main": "qtquickruntime.js",
+  "keywords": [
+    "Qt",
+    "Quick"
+  ],
+  "authors": [
+    "The Qt Project Authors"
+  ],
+  "license": "LGPL",
+  "homepage": "https://github.com/msorvig/qt-quick-web-runtime",
+  "ignore": [
+    "**/.*",
+    "example.html",
+    "example.png"
+  ]
+}
