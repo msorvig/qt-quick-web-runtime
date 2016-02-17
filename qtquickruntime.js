@@ -90,49 +90,48 @@
 //
 function QtQuickRuntime(config)
 {
-    var self = this;
-
     // Create/update the configuration object for QtLoader. The
     // QtQuickRuntime config object is re-used: options can be
     // passed directly to QtLoader.
-    self.config = config || {};
-    self.config["src"] = "qtquickruntime.nmf";
+    config = config || {};
+    config["src"] = "qtquickruntime.nmf";
 
     // Handle the "resizeMode" QtQuickRuntime option. Add it to the QtLoader
     // environment, which is passed to to QtQuickRuntimeInstance::Init()
     // as argn/argv arguments.
-    var resizeMode = self.config["resizeMode"];
+    var resizeMode = config["resizeMode"];
     if (resizeMode !== undefined) {
-        if (self.config["environment"] === undefined)
-            self.config["environment"] = {};
-        self.config["environment"]["qt_qquickview_resizemode"] = resizeMode;
+        if (config["environment"] === undefined)
+            config["environment"] = {};
+        config["environment"]["qt_qquickview_resizemode"] = resizeMode;
     }
-    delete self.config["resizeMode"];
+    delete config["resizeMode"];
 
     // Prepend path to nmf src property if set. Take care to not introduce
     // a leading "/", this would make the src relative to the web root instead
     // of the loading document.
-    var path = self.config["path"];
+    var path = config["path"];
     if (path && path.substr(-path.length) !== "/")
         path += "/";
-    self.config["src"] = (path ? path : "") + "qtquickruntime.nmf"
+    config["src"] = (path ? path : "") + "qtquickruntime.nmf"
 
-    var qtloader = new QtLoader(self.config);
-    var element = {};
+    var qtloader = new QtLoader(config);
+    var element = undefined;
     var loadComplete = false;
-    var source = "";
+    var source = undefined;
+    var data = undefined;
     
     function createElement(existingElement)
     {
-        self.element = qtloader.createElement(existingElement);
+        element = qtloader.createElement(existingElement);
 
         // Set up event handling
         var capture = true;
-        self.element.addEventListener('message', onMessage, capture);
-        self.element.addEventListener('load', onLoad, capture);
-        self.element.addEventListener('crash', onCrash, capture);
+        element.addEventListener('message', onMessage, capture);
+        element.addEventListener('load', onLoad, capture);
+        element.addEventListener('crash', onCrash, capture);
 
-        return self.element;
+        return element;
     }
     
     function load()
@@ -140,30 +139,43 @@ function QtQuickRuntime(config)
         qtloader.load();
     }
     
-    function setSource(source)
+    function setData(newData)
     {
-        // Trigger load and cache QML source on inital setSource call.
-        // Load completion is handled by onLoad() below.
+        source = undefined;
+
         if (!loadComplete) {
-            load();
-            self.source = source;
+            data = newData;
             return;
         }
-        
-        // Send qmlstart event, indicating that QML loading is actually starting
-        // ### we inherit the start/end mismatch form the pexe progress events
-        // (should be start/stop or begin/end), and have to decide if we want
-        // to propagate or break the pattern.
-        var event = new Event('qmlloadstart');
-        self.element.dispatchEvent(event);
 
-        // Send message to the C++ side, will trigger a source reload.
-        qtloader.postMessage("qmlsource:" + source);
+        var event = new Event('qmlloadstart');
+        element.dispatchEvent(event);
+        qtloader.postMessage("qt_qmldata:" + newData);
+    }
+
+    function setSource(newSource)
+    {
+        data = undefined;
+        if (!loadComplete) {
+            source = newSource;
+            return;
+        }
+
+        var event = new Event('qmlloadstart');
+        element.dispatchEvent(event);
+        qtloader.postMessage("qt_qmlsource:" + newSource);
     }
     
     function onLoad(event) {
         loadComplete = true;
-        setSource(self.source);
+
+        if (source) {
+            setSource(source);
+            source = undefined;
+        } else if (data) {
+            setData(data);
+            data = undefined;
+        }
     }
     
     function onCrash(event) {
@@ -174,25 +186,26 @@ function QtQuickRuntime(config)
         // handle 'message' events, look for qml* messages and
         // translate to qml* events.
             
-        var qmlStatusKey = "qmlstatus:";
+        var qmlStatusKey = "qt_qmlstatus:";
         if (message.data.indexOf(qmlStatusKey) === 0) {
             var content = message.data.slice(qmlStatusKey.length);
             var event = new CustomEvent("qmlloadend", { detail : content });
-            self.element.dispatchEvent(event);
+            element.dispatchEvent(event);
         }
 
-        var qmlWarningsKey = "qmlwarnings:";
+        var qmlWarningsKey = "qt_qmlwarnings:";
         if (message.data.indexOf(qmlWarningsKey) === 0) {
             var content = message.data.slice(qmlWarningsKey.length);
             var event = new CustomEvent('qmlwarnings', { detail : content });
-            self.element.dispatchEvent(event);
+            element.dispatchEvent(event);
         }
     }
 
     // Return object containg the public API
     return {
-        createElement : createElement,
-        load : load,
-        setSource : setSource
+        createElement: createElement,
+        load: load,
+        setData: setData,
+        setSource : setSource,
     }
 }

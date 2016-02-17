@@ -74,6 +74,43 @@ public:
         view->setResizeMode(resizeMode);
     }
 
+    // ### use once we have c++11 support
+    template <typename T>
+    void updateContent(T contentSetter)
+    {
+        // Clear previous content
+        delete component;
+        view->engine()->clearComponentCache();
+
+        // Load new content
+        component = new QQmlComponent(view->engine());
+        contentSetter(component);
+        if (component->isLoading()) {
+             QObject::connect(component, SIGNAL(statusChanged(QQmlComponent::Status)),
+                              this, SLOT(continueLoading()));
+         } else {
+             continueLoading();
+         }
+    }
+
+    void setData(const QByteArray &data)
+    {
+        // Clear previous content
+        delete component;
+        view->engine()->clearComponentCache();
+
+        // Load new content
+        component = new QQmlComponent(view->engine());
+        QUrl basePath;
+        component->setData(data, basePath);
+        if (component->isLoading()) {
+             QObject::connect(component, SIGNAL(statusChanged(QQmlComponent::Status)),
+                              this, SLOT(continueLoading()));
+         } else {
+             continueLoading();
+         }
+    }
+
     void setSource(const QByteArray &source)
     {
         // Clear previous content
@@ -82,8 +119,8 @@ public:
 
         // Load new content
         component = new QQmlComponent(view->engine());
-        QUrl baseUrl("/");
-        component->setData(source, baseUrl);
+        QUrl url(QString::fromUtf8(source));
+        component->loadUrl(url);
         if (component->isLoading()) {
              QObject::connect(component, SIGNAL(statusChanged(QQmlComponent::Status)),
                               this, SLOT(continueLoading()));
@@ -183,24 +220,31 @@ public:
         QByteArray message(stdMessage.c_str(), stdMessage.length());
 
         // Update QmlReloader on source change.
-        QByteArray sourceMessageKey = "qmlsource:";
-        if (message.startsWith(sourceMessageKey)) {
+        QByteArray dataMessageKey = "qt_qmldata:";
+        QByteArray sourceMessageKey = "qt_qmlsource:";
+        if (message.startsWith(dataMessageKey)) {
+            QByteArray data = message.mid(dataMessageKey.length());
+            if (reloader)
+                reloader->setData(data);
+            else
+                qWarning("QtQuickRuntimeInstance: No QmlReloader, missed data update");
+        } else if (message.startsWith(sourceMessageKey)) {
             QByteArray source = message.mid(sourceMessageKey.length());
-            if (reloader) {
+            if (reloader)
                 reloader->setSource(source);
-            }
-            return;
+            else
+                qWarning("QtQuickRuntimeInstance: No QmlReloader, missed source update");
+        } else {
+            // Forward other messages to Qt
+            QPepperInstance::HandleMessage(varMessage);
         }
-
-        // Forward other messages to Qt
-        QPepperInstance::HandleMessage(varMessage);
     }
 private Q_SLOTS:
     void loadStatusChanged(int status) {
 
         // Send QML status message to the javascript host. This
         // is either "OK" or "Errors" followed by the error text(s)
-        QByteArray statusMessage = "qmlstatus:"; // the message key
+        QByteArray statusMessage = "qt_qmlstatus:"; // the message key
 
         if (status == QmlReloader::LoadOk) {
             statusMessage.append("OK");
@@ -218,7 +262,7 @@ private Q_SLOTS:
     void qmlWarnings(const QList<QQmlError> & warnings) {
 
         // Send QML runtime warnings to the javascript host
-        QByteArray warningsMessage = "qmlwarnings:";
+        QByteArray warningsMessage = "qt_qmlwarnings:";
         foreach (QQmlError warnings, warnings) {
             warningsMessage.append(warnings.toString());
             warningsMessage.append("\n");

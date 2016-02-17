@@ -120,7 +120,8 @@ function onCodeClicked()
     qmlview.appendChild(warnings)
 
     // Run source code
-    runtime.setSource(code);
+    runtime.setData(code);
+    runtime.load();
 }
 
 function onCodeChanged()
@@ -130,7 +131,7 @@ function onCodeChanged()
     warnings.innerHTML = " "
     var qmlcode = $("qmlcode");
     var code = qmlcode.innerHTML;
-    runtime.setSource(code);
+    runtime.setData(code);
 }
 
 function onQmlStatusChange(event)
